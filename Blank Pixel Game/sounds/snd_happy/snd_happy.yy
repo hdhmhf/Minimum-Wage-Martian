@@ -20,7 +20,7 @@
   "preload":false,
   "resourceType":"GMSound",
   "resourceVersion":"2.0",
-  "sampleRate":5512,
+  "sampleRate":48000,
   "soundFile":"snd_happy.mp3",
   "volume":1.0,
 }
