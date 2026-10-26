@@ -14,6 +14,72 @@ if (global.in_story)
 	exit;
 }
 
+if (global.tutorial_active)
+{
+	draw_set_alpha(0.78);
+	draw_set_colour(c_black);
+	draw_rectangle(0, 0, _gw, _gh, false);
+	draw_set_alpha(1);
+	draw_set_colour(make_colour_rgb(72, 43, 20));
+	draw_roundrect(18, 12, _gw - 18, _gh - 12, false);
+	draw_set_colour(make_colour_rgb(255, 203, 93));
+	draw_roundrect(18, 12, _gw - 18, _gh - 12, true);
+	draw_set_colour(c_white);
+	draw_set_halign(fa_left);
+	draw_set_valign(fa_top);
+	var _tutorial_title = "Your first shift";
+	var _tutorial_line1 = "";
+	var _tutorial_line2 = "";
+	var _tutorial_line3 = "";
+	var _tutorial_line4 = "";
+	switch (global.tutorial_page)
+	{
+		case 0:
+			_tutorial_line1 = "Run the restaurant, cook what customers want, and earn money.";
+			_tutorial_line2 = "This guide is optional; you can skip it any time.";
+			break;
+		case 1:
+			_tutorial_title = "Move and interact";
+			_tutorial_line1 = "Move with WASD or the arrow keys.";
+			_tutorial_line2 = "Press E near objects to interact.";
+			_tutorial_line3 = "Click the tablet icon on the left to open orders.";
+			break;
+		case 2:
+			_tutorial_title = "Cook and serve";
+			_tutorial_line1 = "At the fridge, press E; use left/right to choose food.";
+			_tutorial_line2 = "At the stove, press E to cook, then again to collect it.";
+			_tutorial_line3 = "If food burns, take it to the trash and press E to discard it.";
+			_tutorial_line4 = "Match the customer's thought bubble and serve at their table.";
+			break;
+		default:
+			_tutorial_title = "Neighborhood deliveries";
+			_tutorial_line1 = "Buy the car for $100, then use the tablet to switch modes.";
+			_tutorial_line2 = "Cook the listed food, drive to the named house, and press E.";
+			_tutorial_line3 = "Deliver near its front door within 60 seconds.";
+			break;
+	}
+	draw_text_transformed(30, 23, _tutorial_title, 0.58, 0.58, 0);
+	draw_set_colour(make_colour_rgb(255, 203, 93));
+	draw_line(30, 42, _gw - 30, 42);
+	draw_set_colour(c_white);
+	draw_text_transformed(30, 54, _tutorial_line1, 0.38, 0.38, 0);
+	draw_text_transformed(30, 75, _tutorial_line2, 0.38, 0.38, 0);
+	draw_text_transformed(30, 96, _tutorial_line3, 0.38, 0.38, 0);
+	draw_text_transformed(30, 117, _tutorial_line4, 0.38, 0.38, 0);
+	draw_set_colour(make_colour_rgb(50, 34, 22));
+	draw_roundrect(21, _gh - 30, 77, _gh - 16, false);
+	draw_roundrect(_gw - 88, _gh - 30, _gw - 21, _gh - 16, false);
+	draw_set_colour(c_white);
+	draw_set_halign(fa_center);
+	draw_text_transformed(49, _gh - 27, "SKIP", 0.4, 0.4, 0);
+	var _next_label = (global.tutorial_page >= 3) ? "START" : "NEXT >";
+	draw_text_transformed(_gw - 54, _gh - 27, _next_label, 0.4, 0.4, 0);
+	draw_text_transformed(_gw / 2, _gh - 27, string(global.tutorial_page + 1) + " / 4", 0.38, 0.38, 0);
+	draw_set_halign(fa_left);
+	draw_set_valign(fa_top);
+	exit;
+}
+
 if (global.game_over != "")
 {
 	var _spr = (global.game_over == "win") ? spr_win : spr_lose;

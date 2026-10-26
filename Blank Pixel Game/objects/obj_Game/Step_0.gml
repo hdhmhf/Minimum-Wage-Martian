@@ -3,6 +3,7 @@ if (global.in_story)
 	if (keyboard_check_pressed(vk_escape))
 	{
 		global.in_story = false;
+		global.tutorial_active = true;
 		next_spawn = current_time + 3000;
 		with (obj_Player) e_lock = 2;
 		audio_stop_sound(snd_intro);
@@ -15,11 +16,34 @@ if (global.in_story)
 		if (story_frame >= sprite_get_number(spr_story))
 		{
 			global.in_story = false;
+			global.tutorial_active = true;
 			next_spawn = current_time + 3000;
 			with (obj_Player) e_lock = 2;
 			audio_stop_sound(snd_intro);
 			audio_play_sound(snd_music, 1, true);
 		}
+	}
+	exit;
+}
+
+// The tutorial pauses play and can be advanced with the keyboard or buttons.
+if (global.tutorial_active)
+{
+	var _tutorial_next = keyboard_check_pressed(vk_enter)
+		|| keyboard_check_pressed(vk_space) || keyboard_check_pressed(vk_right);
+	var _tutorial_skip = keyboard_check_pressed(vk_escape);
+	if (mouse_check_button_pressed(mb_left) || device_mouse_check_button_pressed(0, mb_left))
+	{
+		var _tx = device_mouse_x_to_gui(0);
+		var _ty = device_mouse_y_to_gui(0);
+		if (_tx >= 224 && _tx <= 300 && _ty >= 145 && _ty <= 170) _tutorial_next = true;
+		else if (_tx >= 18 && _tx <= 88 && _ty >= 145 && _ty <= 170) _tutorial_skip = true;
+	}
+	if (_tutorial_skip) global.tutorial_active = false;
+	else if (_tutorial_next)
+	{
+		if (global.tutorial_page >= 3) global.tutorial_active = false;
+		else global.tutorial_page++;
 	}
 	exit;
 }

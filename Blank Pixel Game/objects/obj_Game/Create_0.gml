@@ -29,6 +29,8 @@ next_spawn = current_time + 3000;
 next_neighborhood_order = current_time + 5000;
 
 global.in_story = true;
+global.tutorial_active = false;
+global.tutorial_page = 0;
 story_frame = 0;
 story_start_time = current_time;
 

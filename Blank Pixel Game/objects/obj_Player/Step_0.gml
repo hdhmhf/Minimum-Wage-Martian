@@ -1,4 +1,4 @@
-if (global.game_over != "" || global.in_story) exit;
+if (global.game_over != "" || global.in_story || global.tutorial_active) exit;
 
 for (var i = array_length(global.burn_times) - 1; i >= 0; i--)
 {
