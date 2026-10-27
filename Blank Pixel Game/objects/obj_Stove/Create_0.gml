@@ -41,3 +41,34 @@ use = function(_chef)
 		if (_i != -1) array_delete(global.burn_times, _i, 1);
 	}
 }
+
+draw_meter = function(_x1, _y1)
+{
+	var _w = 26, _h = 4;
+	var _x2 = _x1 + _w, _y2 = _y1 + _h;
+	var _in_perfect = (progress >= perfect_min && progress <= perfect_max);
+
+	draw_set_colour(_in_perfect ? make_colour_rgb(255, 203, 93) : c_black);
+	draw_rectangle(_x1 - 1, _y1 - 1, _x2 + 1, _y2 + 1, false);
+	draw_set_colour(make_colour_rgb(60, 60, 70));
+	draw_rectangle(_x1, _y1, _x2, _y2, false);
+	if (progress > 0)
+	{
+		draw_set_colour(make_colour_rgb(255, 203, 93));
+		draw_rectangle(_x1, _y1, _x1 + _w * progress, _y2, false);
+	}
+	draw_set_colour(make_colour_rgb(80, 200, 90));
+	draw_rectangle(_x1 + _w * perfect_min, _y1, _x1 + _w * perfect_max, _y2, false);
+	draw_set_colour(make_colour_rgb(210, 50, 50));
+	draw_rectangle(_x1 + _w * 0.95, _y1, _x2, _y2, false);
+	draw_set_alpha(0.35);
+	draw_set_colour(c_white);
+	draw_line(_x1, _y1, _x2, _y1);
+	draw_set_alpha(1);
+
+	var _nx = round(_x1 + _w * progress);
+	draw_set_colour(c_black);
+	draw_rectangle(_nx - 1, _y1 - 3, _nx + 1, _y2 + 2, false);
+	draw_set_colour(c_white);
+	draw_rectangle(_nx, _y1 - 2, _nx, _y2 + 1, false);
+}

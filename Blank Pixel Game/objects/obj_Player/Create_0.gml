@@ -145,3 +145,82 @@ deliver_at_house = function(_x, _y)
 	}
 	return true;
 }
+
+near_order_house = function(_x, _y)
+{
+	if (room != Neighborhood) return undefined;
+	var _names = ["Red House", "Blue House", "Orange House", "Purple House"];
+	var _door_x = [70, 408, 70, 408];
+	var _door_y = [88, 88, 272, 272];
+	var _best = undefined;
+	var _best_dist = 32;
+	for (var i = 0; i < array_length(global.neighborhood_orders); i++)
+	{
+		for (var h = 0; h < 4; h++)
+		{
+			if (global.neighborhood_orders[i].house != _names[h]) continue;
+			var _d = point_distance(_x, _y, _door_x[h], _door_y[h]);
+			if (_d <= _best_dist)
+			{
+				_best_dist = _d;
+				_best = { px: _door_x[h], py: _door_y[h] - 12, food: global.neighborhood_orders[i].food };
+			}
+		}
+	}
+	return _best;
+}
+
+get_prompt = function()
+{
+	if (in_menu || sad_timer > 0 || global.in_story || global.tutorial_active || global.game_over != "") return undefined;
+
+	var _house = near_order_house(x, y);
+	if (_house != undefined)
+	{
+		if (holding == "good" || holding == "perfect") return { key: true, line1: "Deliver", line2: "food", px: _house.px, py: _house.py };
+		return { key: false, line1: "Order:", line2: string_replace_all(_house.food, "_", " "), px: _house.px, py: _house.py };
+	}
+
+	if (in_car) return { key: true, line1: "Get out", line2: "of car", px: x, py: y - 22 };
+
+	var _car = instance_nearest(x, y, obj_Car);
+	if (_car != noone && room == _car.car_room && !_car.occupied && point_distance(x, y, _car.x, _car.y) < 48)
+	{
+		if (global.car_owned) return { key: true, line1: "Drive", line2: "car", px: _car.x, py: _car.y - 22 };
+		if (room != Parking_Lot) return undefined;
+		if (global.money >= 100) return { key: true, line1: "Buy car", line2: "$100", px: _car.x, py: _car.y - 22 };
+		return { key: false, line1: "Car: $100", line2: "need $" + string(100 - global.money) + " more", px: _car.x, py: _car.y - 22 };
+	}
+
+	var _fridge = instance_nearest(x, y, obj_Fridge);
+	if (_fridge != noone && point_distance(x, y, _fridge.x, _fridge.y) < 28)
+	{
+		if (holding == "" || holding == "raw") return { key: true, line1: "Open", line2: "fridge", px: _fridge.x, py: _fridge.bbox_top };
+		return { key: false, line1: "Hands", line2: "full", px: _fridge.x, py: _fridge.bbox_top };
+	}
+
+	var _stove = instance_nearest(x, y, obj_Stove);
+	if (_stove != noone && point_distance(x, y, _stove.x, _stove.y) < 28)
+	{
+		var _sp = { key: false, line1: "Hands", line2: "full", px: _stove.x, py: _stove.bbox_top };
+		if (_stove.state == "empty" && holding == "raw") _sp = { key: true, line1: "Cook", line2: string_replace_all(holding_food, "_", " "), px: _stove.x, py: _stove.bbox_top };
+		else if (_stove.state == "empty" && holding == "") _sp = { key: false, line1: "Get food", line2: "from fridge", px: _stove.x, py: _stove.bbox_top };
+		else if (_stove.state != "empty" && holding == "") _sp = { key: true, line1: "Take", line2: "food", px: _stove.x, py: _stove.bbox_top };
+		if (_stove.state != "empty") _sp.meter = _stove;
+		return _sp;
+	}
+
+	var _trash = instance_nearest(x, y, obj_Trash);
+	if (_trash != noone && point_distance(x, y, _trash.x, _trash.y) < 28)
+	{
+		if (holding != "") return { key: true, line1: "Throw", line2: "away", px: _trash.x, py: _trash.bbox_top };
+		return undefined;
+	}
+
+	var _table = instance_nearest(x, y, obj_Table);
+	if (_table != noone && point_distance(x, y, _table.x, _table.y) < 36)
+	{
+		if (holding != "" && _table.plate_food == "") return { key: true, line1: "Serve", line2: "food", px: _table.x, py: _table.bbox_top };
+	}
+	return undefined;
+}
