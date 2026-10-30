@@ -4,6 +4,7 @@ display_set_gui_size(320, 180);
 
 menu_open = false;
 menu_index = 0;
+menu_cols = 7;
 menu_chef = noone;
 menu_skip_frame = false;
 

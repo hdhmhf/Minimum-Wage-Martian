@@ -6,15 +6,25 @@ depth = -y;
 
 state = "walking";
 walk_speed = 1;
-spot_x = table.x - 32;
+spot_x = table.x - 18;
 spot_y = table.y + 1;
 exit_x = 160;
 exit_y = 186;
 
-wants = global.fridge_foods[irandom(array_length(global.fridge_foods) - 1)];
-patience_ms = 30000;
-ticket = { ends: 0, done: false, angry: false };
+if (!variable_instance_exists(id, "ticket")) ticket = global.new_ticket(global.patience_by_day[max(0, global.day - 1)]);
+wants = ticket.food;
+wants_toppings = ticket.toppings;
 eat_end = 0;
+pay_text = "";
+pay_until = 0;
+day_serial = global.day_serial;
+if (ticket.tutorial) global.tut_table = table;
+if (variable_instance_exists(id, "seated") && seated)
+{
+	x = spot_x;
+	y = spot_y;
+	state = "waiting";
+}
 
 leave = function()
 {

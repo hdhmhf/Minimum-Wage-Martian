@@ -28,10 +28,10 @@
   "properties":[],
   "resourceType":"GMObject",
   "resourceVersion":"2.0",
-  "solid":false,
+  "solid":true,
   "spriteId":{
-    "name":"spr_chair",
-    "path":"sprites/spr_chair/spr_chair.yy",
+    "name":"spr_squeek_squeek",
+    "path":"sprites/spr_squeek_squeek/spr_squeek_squeek.yy",
   },
   "spriteMaskId":null,
   "visible":true,

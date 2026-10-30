@@ -1,4 +1,4 @@
-if (global.game_over != "" || global.in_story || global.tutorial_active) exit;
+if (global.game_over != "" || global.in_story || global.tutorial_active || global.day_state == "summary") exit;
 
 for (var i = array_length(global.burn_times) - 1; i >= 0; i--)
 {
@@ -24,7 +24,7 @@ if (e_lock > 0) e_lock--;
 
 if (in_menu)
 {
-	image_speed = 0;
+	if (!scrubbing) image_speed = 0;
 	depth = -(y + 9);
 	exit;
 }
@@ -104,19 +104,20 @@ if (in_car)
 	}
 }
 
-var xspd = hor * move_speed;
-var yspd = ver * move_speed;
+var _spd = (pushing_cart != noone) ? 1.5 : move_speed;
+var xspd = hor * _spd;
+var yspd = ver * _spd;
 
-if (hits_wall(x + xspd, y))
+if (move_blocked(x + xspd, y))
 {
-	while (!hits_wall(x + sign(xspd), y)) x += sign(xspd);
+	while (!move_blocked(x + sign(xspd), y)) x += sign(xspd);
 	xspd = 0;
 }
 x += xspd;
 
-if (hits_wall(x, y + yspd))
+if (move_blocked(x, y + yspd))
 {
-	while (!hits_wall(x, y + sign(yspd))) y += sign(yspd);
+	while (!move_blocked(x, y + sign(yspd))) y += sign(yspd);
 	yspd = 0;
 }
 y += yspd;
@@ -129,6 +130,7 @@ var _is_car_only_gate = (room == Parking_Lot && door != noone && door.target_roo
 	|| (room == Neighborhood && door != noone && door.target_room == Parking_Lot);
 if (door != noone && !_is_car_only_gate)
 {
+	if (pushing_cart != noone) pushing_cart.cart_room = door.target_room;
 	global.spawn_x = door.target_x;
 	global.spawn_y = door.target_y;
 	room_goto(door.target_room);
@@ -158,49 +160,42 @@ else
 	image_speed = 1;
 }
 
+if (pushing_cart != noone)
+{
+	var _o = cart_offset(facing);
+	pushing_cart.x = x + _o[0];
+	pushing_cart.y = y + _o[1];
+	pushing_cart.facing = facing;
+	pushing_cart.depth = -(pushing_cart.y + 10);
+}
+
+if (pushing_cart == noone) global.cart_ui_open = false;
+else if (keyboard_check_pressed(ord("F"))) global.cart_ui_open = !global.cart_ui_open;
+
+var _take_cart = cart_for_taking();
+if (_take_cart != noone)
+{
+	if (keyboard_check_pressed(ord("Q"))) take_from_cart(_take_cart, array_length(_take_cart.dishes) - 1);
+	else if (global.cart_ui_open && mouse_check_button_pressed(mb_left))
+	{
+		var _gmx = device_mouse_x_to_gui(0);
+		var _gmy = device_mouse_y_to_gui(0);
+		for (var i = 0; i < array_length(_take_cart.dishes); i++)
+		{
+			var _sy = 48 + i * 37;
+			if (point_in_rectangle(_gmx, _gmy, 76, _sy, 244, _sy + 33))
+			{
+				take_from_cart(_take_cart, i);
+				break;
+			}
+		}
+	}
+}
+
 if (keyboard_check_pressed(ord("E")) && e_lock == 0)
 {
-	if (deliver_at_house(x, y)) exit;
-
-	var _nearby_car = instance_nearest(x, y, obj_Car);
-	if (_nearby_car != noone && room == _nearby_car.car_room && !_nearby_car.occupied && point_distance(x, y, _nearby_car.x, _nearby_car.y) < 48)
-	{
-		if (!global.car_owned && room == Parking_Lot)
-		{
-			if (global.money >= 100)
-			{
-				global.money -= 100;
-				global.car_owned = true;
-				global.car_feedback = "Car purchased for $100";
-				global.car_feedback_until = current_time + 2500;
-			}
-			else
-			{
-				global.car_feedback = "The car costs $100";
-				global.car_feedback_until = current_time + 2500;
-			}
-		}
-		if (global.car_owned)
-		{
-			in_car = true;
-			current_car = _nearby_car;
-			_nearby_car.occupied = true;
-			x = _nearby_car.x;
-			y = _nearby_car.y;
-			facing = _nearby_car.car_facing;
-		}
-	}
-	else
-	{
-		var fridge = instance_nearest(x, y, obj_Fridge);
-		var stove = instance_nearest(x, y, obj_Stove);
-		var trash = instance_nearest(x, y, obj_Trash);
-		var table = instance_nearest(x, y, obj_Table);
-		if (fridge != noone && point_distance(x, y, fridge.x, fridge.y) < 28) fridge.use(id);
-		else if (stove != noone && point_distance(x, y, stove.x, stove.y) < 28) stove.use(id);
-		else if (trash != noone && point_distance(x, y, trash.x, trash.y) < 28) trash.use(id);
-		else if (table != noone && point_distance(x, y, table.x, table.y) < 36) table.serve(id);
-	}
+	var _act = find_action();
+	if (_act != undefined && _act.kind != "none") do_action(_act);
 }
 
 depth = -(y + 9);

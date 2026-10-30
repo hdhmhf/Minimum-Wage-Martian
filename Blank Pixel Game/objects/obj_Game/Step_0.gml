@@ -1,49 +1,10 @@
 if (global.in_story)
 {
-	if (keyboard_check_pressed(vk_escape))
-	{
-		global.in_story = false;
-		global.tutorial_active = true;
-		next_spawn = current_time + 3000;
-		with (obj_Player) e_lock = 2;
-		audio_stop_sound(snd_intro);
-		audio_play_sound(snd_music, 1, true);
-	}
+	if (keyboard_check_pressed(vk_escape)) end_story();
 	else
 	{
-		// Derive the slide from elapsed time so slow frames cannot stall the sequence.
 		story_frame = floor((current_time - story_start_time) / 3000);
-		if (story_frame >= sprite_get_number(spr_story))
-		{
-			global.in_story = false;
-			global.tutorial_active = true;
-			next_spawn = current_time + 3000;
-			with (obj_Player) e_lock = 2;
-			audio_stop_sound(snd_intro);
-			audio_play_sound(snd_music, 1, true);
-		}
-	}
-	exit;
-}
-
-// The tutorial pauses play and can be advanced with the keyboard or buttons.
-if (global.tutorial_active)
-{
-	var _tutorial_next = keyboard_check_pressed(vk_enter)
-		|| keyboard_check_pressed(vk_space) || keyboard_check_pressed(vk_right);
-	var _tutorial_skip = keyboard_check_pressed(vk_escape);
-	if (mouse_check_button_pressed(mb_left) || device_mouse_check_button_pressed(0, mb_left))
-	{
-		var _tx = device_mouse_x_to_gui(0);
-		var _ty = device_mouse_y_to_gui(0);
-		if (_tx >= 224 && _tx <= 300 && _ty >= 145 && _ty <= 170) _tutorial_next = true;
-		else if (_tx >= 18 && _tx <= 88 && _ty >= 145 && _ty <= 170) _tutorial_skip = true;
-	}
-	if (_tutorial_skip) global.tutorial_active = false;
-	else if (_tutorial_next)
-	{
-		if (global.tutorial_page >= 3) global.tutorial_active = false;
-		else global.tutorial_page++;
+		if (story_frame >= sprite_get_number(spr_story)) end_story();
 	}
 	exit;
 }
@@ -52,6 +13,35 @@ if (global.game_over != "")
 {
 	if (keyboard_check_pressed(ord("R"))) game_restart();
 	exit;
+}
+
+if (global.day_state == "summary")
+{
+	if (current_time > summary_lock && (keyboard_check_pressed(ord("E")) || keyboard_check_pressed(vk_enter) || keyboard_check_pressed(vk_space)))
+	{
+		if (!global.day_passed)
+		{
+			global.lose_reason = "You missed the quota on day " + string(global.day) + ".";
+			global.game_over = "lose";
+		}
+		else if (global.day >= global.max_days) global.game_over = "win";
+		else start_day(global.day + 1);
+		with (obj_Player) e_lock = 2;
+	}
+	exit;
+}
+
+if (global.day_state == "tutorial")
+{
+	var _menu_open = global.board_open;
+	with (obj_Fridge) if (menu_open) _menu_open = true;
+	if (keyboard_check_pressed(vk_escape) && !_menu_open)
+	{
+		reset_world();
+		start_day(1);
+	}
+	else if (keyboard_check_pressed(vk_space) && !_menu_open) tut_next();
+	else tutorial_update();
 }
 
 // Tablet launcher and touch controls. The launcher is available on the left
@@ -82,7 +72,7 @@ global.tablet_button_alpha = lerp(global.tablet_button_alpha, _hide_tablet_butto
 if (global.tablet_button_alpha < 0.01 && _hide_tablet_button) global.tablet_button_alpha = 0;
 if (global.tablet_button_alpha > 0.99 && !_hide_tablet_button) global.tablet_button_alpha = 1;
 
-if (_mouse_pressed && global.tablet_button_alpha > 0.65 && _mx >= _icon_x && _mx <= _icon_x + 38 && _my >= _icon_y && _my <= _icon_y + 38)
+if (_mouse_pressed && !global.board_open && global.tablet_button_alpha > 0.65 && _mx >= _icon_x && _mx <= _icon_x + 38 && _my >= _icon_y && _my <= _icon_y + 38)
 {
 	global.tablet_open = !global.tablet_open;
 	if (global.tablet_open)
@@ -147,6 +137,7 @@ else if (global.tablet_open)
 	}
 }
 
+
 for (var i = array_length(global.tickets) - 1; i >= 0; i--)
 {
 	var _t = global.tickets[i];
@@ -154,7 +145,7 @@ for (var i = array_length(global.tickets) - 1; i >= 0; i--)
 	{
 		array_delete(global.tickets, i, 1);
 	}
-	else if (current_time >= _t.ends)
+	else if (!_t.tutorial && current_time >= _t.ends)
 	{
 		_t.done = true;
 		_t.angry = true;
@@ -163,7 +154,7 @@ for (var i = array_length(global.tickets) - 1; i >= 0; i--)
 	}
 }
 
-if (global.order_mode == "neighborhood" && global.car_owned && current_time >= next_neighborhood_order)
+if (global.day_state == "running" && global.order_mode == "neighborhood" && global.car_owned && current_time >= next_neighborhood_order)
 {
 	if (array_length(global.neighborhood_orders) < 3)
 	{
@@ -192,17 +183,51 @@ for (var oi = array_length(global.neighborhood_orders) - 1; oi >= 0; oi--)
 	}
 }
 
-if (global.order_mode == "restaurant" && room == Dining_Area && current_time >= next_spawn)
+
+if (global.day_state == "running" && global.order_mode == "restaurant" && current_time >= next_spawn && current_time < global.day_end - 25000)
 {
-	next_spawn = current_time + irandom_range(8000, 14000);
-	var _free = [];
-	with (obj_Table) if (customer == noone) array_push(_free, id);
-	if (array_length(_free) > 0)
+	var _range = global.spawn_by_day[global.day - 1];
+	next_spawn = current_time + irandom_range(_range[0], _range[1]);
+	if (array_length(global.tickets) < 5)
 	{
-		var _table = _free[irandom(array_length(_free) - 1)];
-		_table.customer = instance_create_layer(160, 182, "Instances", obj_Customer, { table: _table });
+		var _ticket = global.new_ticket(global.patience_by_day[global.day - 1] + 5000);
+		array_push(global.tickets, _ticket);
+		array_push(global.arrivals, _ticket);
 	}
 }
 
-if (global.mistakes >= global.max_mistakes) global.game_over = "lose";
-else if (global.money >= global.money_goal) global.game_over = "win";
+if (room == Dining_Area)
+{
+	var _ai = 0;
+	while (_ai < array_length(global.arrivals))
+	{
+		var _a = global.arrivals[_ai];
+		if (_a.done)
+		{
+			array_delete(global.arrivals, _ai, 1);
+			continue;
+		}
+		var _free = [];
+		with (obj_Table) if (customer == noone) array_push(_free, id);
+		if (array_length(_free) == 0) break;
+		var _table = _free[irandom(array_length(_free) - 1)];
+		_table.customer = instance_create_layer(160, 182, "Instances", obj_Customer, { table: _table, ticket: _a, seated: current_time - _a.arrive > 5000 });
+		array_delete(global.arrivals, _ai, 1);
+	}
+}
+
+if (global.day_state == "running")
+{
+	if (global.mistakes >= global.max_mistakes)
+	{
+		global.lose_reason = "Too many mistakes!";
+		global.game_over = "lose";
+	}
+	else if (current_time >= global.day_end)
+	{
+		global.day_passed = global.day_earned >= global.quotas[global.day - 1];
+		global.day_state = "summary";
+		summary_lock = current_time + 700;
+		reset_world();
+	}
+}

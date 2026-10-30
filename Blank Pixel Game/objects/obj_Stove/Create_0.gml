@@ -9,6 +9,7 @@ food = "";
 cook_start = 0;
 burn_at = 0;
 if (!variable_global_exists("burn_times")) global.burn_times = [];
+day_serial = variable_global_exists("day_serial") ? global.day_serial : 0;
 
 // called when u press E next to the stove
 use = function(_chef)
@@ -30,17 +31,30 @@ use = function(_chef)
 	}
 	else if (_chef.holding == "")
 	{
+		var _st = "burnt";
+		if (progress < perfect_min - 0.25)  _st = "raw";
+		else if (progress < perfect_min)    _st = "good";
+		else if (progress <= perfect_max)   _st = "perfect"; //good job
+		else if (progress < 0.95)           _st = "good";
+		if (_st != "raw")
+		{
+			if (global.clean_plates <= 0)
+			{
+				global.car_feedback = "No clean plates! Wash dishes at the sink.";
+				global.car_feedback_until = current_time + 2500;
+				return;
+			}
+			global.clean_plates--;
+		}
 		_chef.holding_food = food;
-		if (progress < perfect_min - 0.25)  _chef.holding = "raw";
-		else if (progress < perfect_min)    _chef.holding = "good";
-		else if (progress <= perfect_max)   _chef.holding = "perfect"; //good job
-		else if (progress < 0.95)           _chef.holding = "good";
-		else                                _chef.holding = "burnt";
+		_chef.holding = _st;
+		_chef.holding_toppings = {};
 		state = "empty";
 		var _i = array_get_index(global.burn_times, burn_at);
 		if (_i != -1) array_delete(global.burn_times, _i, 1);
 	}
 }
+
 
 draw_meter = function(_x1, _y1)
 {

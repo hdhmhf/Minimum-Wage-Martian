@@ -1,12 +1,18 @@
+if (day_serial != global.day_serial)
+{
+	day_serial = global.day_serial;
+	plate_food = "";
+	plate_kind = "";
+	plate_toppings = {};
+	customer = noone;
+}
+
 draw_self();
 
-if (plate_food != "")
+if (plate_food == "dirty") global.draw_plate(x, y - 14, 7, true);
+else if (plate_food != "")
 {
-	draw_set_colour(c_white);
-	draw_ellipse(x - 7, y - 18, x + 7, y - 10, false);
-	draw_set_colour(c_ltgray);
-	draw_ellipse(x - 7, y - 18, x + 7, y - 10, true);
-	draw_set_colour(c_white);
-
+	global.draw_plate(x, y - 14, 7, false);
 	global.draw_food(plate_kind, plate_food, x, y - 14, 0.8);
+	global.draw_toppings(plate_toppings, x, y - 14, 6);
 }

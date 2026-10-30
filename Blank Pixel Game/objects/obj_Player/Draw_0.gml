@@ -9,4 +9,13 @@ if (keyboard_check(ord("H")))
 	draw_set_colour(c_white);
 }
 
-if (holding != "") global.draw_food(holding_food, holding, x, y - 26, 1);
+if (holding == "dirty")
+{
+	for (var i = 0; i < dirty_count; i++) global.draw_plate(x, y - 24 - i * 2, 6, true);
+}
+else if (holding != "")
+{
+	if (holding != "raw") global.draw_plate(x, y - 23, 7, false);
+	global.draw_food(holding_food, holding, x, y - 26, 1);
+	if (holding != "raw") global.draw_toppings(holding_toppings, x, y - 26, 5);
+}
