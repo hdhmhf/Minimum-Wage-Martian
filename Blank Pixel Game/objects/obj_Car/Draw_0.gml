@@ -10,7 +10,6 @@ switch (car_facing)
 	case "right": _sprite = spr_car_left;  _scale = 0.14; break;
 }
 
-// Parked cars use the matching sprite without the alien in the driver's seat.
 if (!occupied)
 {
 	switch (car_facing)
@@ -18,8 +17,6 @@ if (!occupied)
 		case "down":  _sprite = spr_car_front_no_alien; break;
 		case "left":  _sprite = spr_car_right_no_alien; break;
 		case "right": _sprite = spr_car_left_no_alien; break;
-		// The existing back sprite is already the empty rear view;
-		// the *_back_no_alien asset currently contains the alien.
 		default:      _sprite = spr_car_back; break;
 	}
 }

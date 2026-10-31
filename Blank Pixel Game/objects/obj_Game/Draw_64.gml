@@ -113,11 +113,9 @@ for (var i = 0; i < array_length(global.tickets) && _shown < 6; i++)
 }
 draw_set_colour(c_white);
 
-// Small tablet launcher stays at the left edge. Opening it shows the tablet
-// large in the center while leaving the current room visible around it.
-var _icon_x = 5 - 30 * (1 - global.tablet_button_alpha);
+var _icon_x = 5 - 30 * (1 - global.ui.tablet_button_alpha);
 var _icon_y = (_gh - 38) * 0.5;
-draw_set_alpha(global.tablet_button_alpha);
+draw_set_alpha(global.ui.tablet_button_alpha);
 draw_set_colour(make_colour_rgb(65, 44, 0));
 draw_roundrect(_icon_x, _icon_y, _icon_x + 38, _icon_y + 38, false);
 draw_set_colour(c_white);
@@ -129,11 +127,11 @@ draw_sprite_ext(spr_delivery_tablet, 0,
 	_icon_s, _icon_s, 0, c_white, 1);
 draw_set_alpha(1);
 
-if (global.tablet_open)
+if (global.ui.tablet_open)
 {
-	var _tablet_x = global.orders_x;
-	var _tablet_y = global.orders_y;
-	var _tablet_s = global.orders_scale;
+	var _tablet_x = global.ui.orders_x;
+	var _tablet_y = global.ui.orders_y;
+	var _tablet_s = global.ui.orders_scale;
 	draw_sprite_ext(spr_delivery_tablet, 0,
 		_tablet_x + sprite_get_xoffset(spr_delivery_tablet) * _tablet_s,
 		_tablet_y + sprite_get_yoffset(spr_delivery_tablet) * _tablet_s,
@@ -142,7 +140,7 @@ if (global.tablet_open)
 	var _screen_y = _tablet_y + 119 * _tablet_s;
 	draw_set_colour(c_black);
 	draw_text_transformed(_screen_x, _screen_y, "Orders", 0.38, 0.38, 0);
-	if (!global.orders_open)
+	if (!global.ui.orders_open)
 	{
 		draw_text_transformed(_screen_x, _screen_y + 20 * _tablet_s, "Tap Orders to open", 0.34, 0.34, 0);
 	}
@@ -160,8 +158,8 @@ if (global.tablet_open)
 				var _food_name = string_replace_all(_order.food, "_", " ");
 				var _seconds_left = ceil(max(0, (_order.deadline - current_time) / 1000));
 				draw_text_transformed(_screen_x, _row_y, "Cooked: " + _food_name, 0.34, 0.34, 0);
-				draw_text_transformed(_screen_x, _row_y + 18 * _tablet_s, "To: " + _order.house, 0.34, 0.34, 0);
-				draw_text_transformed(_screen_x, _row_y + 36 * _tablet_s, "Time: " + string(_seconds_left) + "s", 0.34, 0.34, 0);
+				draw_text_transformed(_screen_x, _row_y + 18 * _tablet_s, "To: " + _order.house + "  " + string(_seconds_left) + "s", 0.34, 0.34, 0);
+				draw_text_ext_transformed(_screen_x, _row_y + 36 * _tablet_s, global.toppings_text(_order.toppings), 14 * _tablet_s / 0.3, 330 * _tablet_s / 0.3, 0.3, 0.3, 0);
 			}
 		}
 	}
@@ -171,7 +169,19 @@ if (global.tablet_open)
 	}
 	else
 	{
-		draw_text_transformed(_screen_x, _screen_y + 20 * _tablet_s, "Restaurant service is active", 0.34, 0.34, 0);
+		var _rows = 0;
+		for (var i = 0; i < array_length(global.tickets) && _rows < 3; i++)
+		{
+			var _ticket = global.tickets[i];
+			if (_ticket.done) continue;
+			var _row_y = _tablet_y + (139 + _rows * 62) * _tablet_s;
+			var _name = global.food_label(_ticket.food, "good");
+			if (!_ticket.tutorial) _name += "  " + string(ceil(max(0, (_ticket.ends - current_time) / 1000))) + "s";
+			draw_text_transformed(_screen_x, _row_y, _name, 0.34, 0.34, 0);
+			draw_text_ext_transformed(_screen_x, _row_y + 18 * _tablet_s, global.toppings_text(_ticket.toppings), 14 * _tablet_s / 0.3, 330 * _tablet_s / 0.3, 0.3, 0.3, 0);
+			_rows++;
+		}
+		if (_rows == 0) draw_text_transformed(_screen_x, _screen_y + 20 * _tablet_s, "No orders yet", 0.34, 0.34, 0);
 	}
 
 	var _mode_y = _tablet_y + 342 * _tablet_s;

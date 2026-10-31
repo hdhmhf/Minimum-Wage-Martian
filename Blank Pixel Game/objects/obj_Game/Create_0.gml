@@ -13,19 +13,22 @@ global.car_feedback = "";
 global.car_feedback_until = 0;
 global.order_mode = "restaurant";
 global.neighborhood_orders = [];
-global.orders_open = true;
-global.orders_scale = min((display_get_gui_height() - 12) / 400, (display_get_gui_width() - 20) / 400);
-global.orders_x = (display_get_gui_width() - 400 * global.orders_scale) / 2;
-global.orders_y = (display_get_gui_height() - 400 * global.orders_scale) / 2;
-global.tablet_open = false;
-global.tablet_button_alpha = 1;
-global.orders_dragging = false;
-global.orders_resizing = false;
-global.orders_drag_moved = false;
-global.orders_drag_offset_x = 0;
-global.orders_drag_offset_y = 0;
-global.orders_drag_start_x = 0;
-global.orders_drag_start_y = 0;
+global.ui = {
+	board_open: false,
+	cart_ui_open: false,
+	tablet_open: false,
+	tablet_button_alpha: 1,
+	orders_open: true,
+	orders_scale: min((display_get_gui_height() - 12) / 400, (display_get_gui_width() - 20) / 400),
+	orders_x: 0,
+	orders_y: 0,
+	orders_dragging: false,
+	orders_resizing: false,
+	orders_drag_offset_x: 0,
+	orders_drag_offset_y: 0,
+};
+global.ui.orders_x = (display_get_gui_width() - 400 * global.ui.orders_scale) / 2;
+global.ui.orders_y = (display_get_gui_height() - 400 * global.ui.orders_scale) / 2;
 
 next_spawn = current_time + 3000;
 next_neighborhood_order = current_time + 5000;
@@ -51,8 +54,6 @@ global.plates_total = 5;
 global.clean_plates = global.plates_total;
 global.sink_dirty = 0;
 global.plates_washed = 0;
-global.board_open = false;
-global.cart_ui_open = false;
 global.tut_step = 0;
 global.tut_moved = 0;
 global.tut_until = 0;
@@ -98,6 +99,15 @@ global.toppings_lines = function(_t)
 	var _lines = [];
 	for (var i = 0; i < array_length(_keys); i++) array_push(_lines, global.condiment_by_id(_keys[i]).name + " x" + string(_t[$ _keys[i]]));
 	return _lines;
+}
+
+global.toppings_text = function(_t)
+{
+	var _lines = global.toppings_lines(_t);
+	if (array_length(_lines) == 0) return "No toppings";
+	var _text = _lines[0];
+	for (var i = 1; i < array_length(_lines); i++) _text += ", " + _lines[i];
+	return _text;
 }
 
 global.draw_toppings = function(_t, _x, _y, _r)
@@ -206,7 +216,7 @@ reset_world = function()
 	global.neighborhood_orders = [];
 	global.clean_plates = global.plates_total;
 	global.sink_dirty = 0;
-	global.cart_ui_open = false;
+	global.ui.cart_ui_open = false;
 	global.tut_table = noone;
 	with (obj_Cart) dishes = [];
 	with (obj_CuttingBoard) if (open) finish_close();
@@ -375,10 +385,10 @@ tutorial_update = function()
 			if (_p.has_dish()) global.tut_step = 5;
 			break;
 		case 5:
-			if (global.board_open) global.tut_step = 6;
+			if (global.ui.board_open) global.tut_step = 6;
 			break;
 		case 6:
-			if (!global.board_open)
+			if (!global.ui.board_open)
 			{
 				tut_spawn_customer();
 				global.tut_step = 7;

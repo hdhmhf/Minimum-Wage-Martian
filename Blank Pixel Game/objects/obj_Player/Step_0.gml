@@ -62,8 +62,6 @@ if (in_car)
 		depth = -(y + 18);
 		_car.depth = depth;
 
-		// Enter the neighborhood through the parking lot's south road opening.
-		// Trigger before the car reaches the invisible room-edge collision.
 		if (room == Parking_Lot && _car.y >= room_height - 64 && _car.x >= 145 && _car.x <= 270)
 		{
 			_car.car_room = Neighborhood;
@@ -74,7 +72,6 @@ if (in_car)
 			room_goto(Neighborhood);
 			exit;
 		}
-		// Return through the neighborhood's north road opening.
 		if (room == Neighborhood && _car.y <= 40 && _car.x >= 200 && _car.x <= 280)
 		{
 			_car.car_room = Parking_Lot;
@@ -169,14 +166,14 @@ if (pushing_cart != noone)
 	pushing_cart.depth = -(pushing_cart.y + 10);
 }
 
-if (pushing_cart == noone) global.cart_ui_open = false;
-else if (keyboard_check_pressed(ord("F"))) global.cart_ui_open = !global.cart_ui_open;
+if (pushing_cart == noone) global.ui.cart_ui_open = false;
+else if (keyboard_check_pressed(ord("F"))) global.ui.cart_ui_open = !global.ui.cart_ui_open;
 
 var _take_cart = cart_for_taking();
 if (_take_cart != noone)
 {
 	if (keyboard_check_pressed(ord("Q"))) take_from_cart(_take_cart, array_length(_take_cart.dishes) - 1);
-	else if (global.cart_ui_open && mouse_check_button_pressed(mb_left))
+	else if (global.ui.cart_ui_open && mouse_check_button_pressed(mb_left))
 	{
 		var _gmx = device_mouse_x_to_gui(0);
 		var _gmy = device_mouse_y_to_gui(0);

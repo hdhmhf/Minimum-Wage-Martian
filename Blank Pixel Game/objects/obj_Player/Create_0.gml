@@ -13,11 +13,6 @@ find_walls = function()
 	if (_walls != -1)
 	{
 		walls_tilemap = layer_tilemap_get_id(_walls);
-		show_debug_message("obj_Player: walls tilemap in " + room_get_name(room) + " = " + string(walls_tilemap));
-	}
-	else
-	{
-		show_debug_message("obj_Player: no \"Walls\" layer in " + room_get_name(room) + ", nothing is solid");
 	}
 }
 find_walls();
@@ -48,9 +43,6 @@ car_hits_wall = function(_x, _y)
 	var _hw = 14;
 	var _hh = 18;
 	if (_x - _hw < 4 || _x + _hw > room_width - 4 || _y - _hh < 4 || _y + _hh > room_height - 20) return true;
-	// In the parking lot, keep the car on the dark asphalt: the main lot and
-	// its narrow center driveway are the only driveable areas. The driveway
-	// remains open to the neighborhood exit at the bottom of the room.
 	if (room == Parking_Lot)
 	{
 		var _in_lot = (_x - _hw >= 0 && _x + _hw <= 330 && _y - _hh >= 82 && _y + _hh <= 260);
@@ -103,11 +95,9 @@ deliver_at_house = function(_x, _y)
 	if (room != Neighborhood || array_length(global.neighborhood_orders) <= 0) return false;
 
 	var _house_names = ["Red House", "Blue House", "Orange House", "Purple House"];
-	// Front doors face away from the center road: the top homes face down,
-	// and the bottom homes face toward the bottom edge of the neighborhood.
 	var _door_x = [70, 408, 70, 408];
 	var _door_y = [88, 88, 272, 272];
-	// Only accept delivery near the front door of the house named on the order.
+	// has to be at the door of the right house
 	var _order_index = -1;
 	var _near_index = -1;
 	var _near_dist = 32;
@@ -132,13 +122,14 @@ deliver_at_house = function(_x, _y)
 	if (_order.food == holding_food && (holding == "good" || holding == "perfect"))
 	{
 		array_delete(global.neighborhood_orders, _order_index, 1);
-		var _pay = irandom_range(30, 50);
+		var _pay = irandom_range(30, 50) + global.score_toppings(_order.toppings, holding_toppings).tip;
 		global.earn(_pay);
 		global.clean_plates++;
 		global.car_feedback = "Delivered to " + _near_house + "! +$" + string(_pay);
 		global.car_feedback_until = current_time + 2500;
 		holding = "";
 		holding_food = "";
+		holding_toppings = {};
 	}
 	else if (holding != "" && holding != "dirty")
 	{
@@ -147,6 +138,7 @@ deliver_at_house = function(_x, _y)
 		audio_play_sound(snd_angry, 1, false);
 		holding = "";
 		holding_food = "";
+		holding_toppings = {};
 		global.car_feedback = "Wrong delivery! +1 OOPS";
 		global.car_feedback_until = current_time + 2500;
 	}
@@ -232,7 +224,7 @@ take_from_cart = function(_cart, _i)
 	holding_food = _d.food;
 	holding_toppings = _d.toppings;
 	pushing_cart = noone;
-	global.cart_ui_open = false;
+	global.ui.cart_ui_open = false;
 	e_lock = 2;
 }
 
@@ -294,7 +286,12 @@ find_action = function()
 	{
 		var _dishes = pushing_cart.dishes;
 		var _ct = cart_table();
-		if (_ct != noone && array_length(_dishes) > 0) return act(true, "Serve", global.food_label(_dishes[pushing_cart.pick_dish(_ct)].food, "good"), _ct.x, _ct.bbox_top, "cart_serve", _ct);
+		if (_ct != noone && array_length(_dishes) > 0 && instance_exists(_ct.customer))
+		{
+			var _pick = pushing_cart.pick_dish(_ct);
+			if (_pick < 0) return act(false, "No " + global.food_label(_ct.customer.wants, "good"), "on cart", _ct.x, _ct.bbox_top, "cart_missing", _ct);
+			return act(true, "Serve", global.food_label(_dishes[_pick].food, "good"), _ct.x, _ct.bbox_top, "cart_serve", _ct);
+		}
 		var _tr = cart_trash();
 		if (_tr != noone && array_length(_dishes) > 0) return act(true, "Throw away", "last dish", _tr.x, _tr.bbox_top, "cart_trash", _tr);
 		var _release = act(true, "Let go", "of cart", x, y - 22, "cart_release", noone);
@@ -377,6 +374,16 @@ get_prompt = function()
 	return _a;
 }
 
+enter_car = function(_car)
+{
+	in_car = true;
+	current_car = _car;
+	_car.occupied = true;
+	x = _car.x;
+	y = _car.y;
+	facing = _car.car_facing;
+}
+
 do_action = function(_a)
 {
 	switch (_a.kind)
@@ -412,13 +419,10 @@ do_action = function(_a)
 			global.car_owned = true;
 			global.car_feedback = "Car purchased for $100";
 			global.car_feedback_until = current_time + 2500;
+			enter_car(_a.target);
+			break;
 		case "car_drive":
-			in_car = true;
-			current_car = _a.target;
-			_a.target.occupied = true;
-			x = _a.target.x;
-			y = _a.target.y;
-			facing = _a.target.car_facing;
+			enter_car(_a.target);
 			break;
 		case "station":
 			_a.target.use(id);

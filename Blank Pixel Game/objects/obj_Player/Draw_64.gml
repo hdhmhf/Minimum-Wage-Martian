@@ -47,7 +47,7 @@ if (_p != undefined)
 	draw_set_halign(fa_left);
 }
 
-if (global.in_story || global.game_over != "" || global.day_state == "summary" || global.board_open) exit;
+if (global.in_story || global.game_over != "" || global.day_state == "summary" || global.ui.board_open) exit;
 
 var _hints = [];
 if (scrubbing) array_push(_hints, "Washing dishes...");
@@ -57,7 +57,7 @@ else if (!in_menu)
 	var _a = find_action();
 	if (_a != undefined && _a.kind != "none") array_push(_hints, "E: " + _a.line1 + " " + _a.line2);
 	else array_push(_hints, "E: Interact");
-	if (pushing_cart != noone) array_push(_hints, "F: " + (global.cart_ui_open ? "Hide" : "View") + " cart");
+	if (pushing_cart != noone) array_push(_hints, "F: " + (global.ui.cart_ui_open ? "Hide" : "View") + " cart");
 	if (cart_for_taking() != noone) array_push(_hints, "Q: Take dish off cart");
 	if (global.day_state == "tutorial")
 	{
@@ -98,7 +98,7 @@ if (array_length(_hints) > 0)
 	}
 }
 
-if (global.cart_ui_open && pushing_cart != noone)
+if (global.ui.cart_ui_open && pushing_cart != noone)
 {
 	var _px1 = 70, _py1 = 30, _px2 = 250, _py2 = 158;
 	draw_set_alpha(0.94);

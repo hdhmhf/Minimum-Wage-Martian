@@ -2,7 +2,6 @@ draw_set_alpha(1);
 
 switch (kind)
 {
-	// ------------------------------------------------------------ CAR
 	case "car":
 	{
 		var _x1 = dx;
@@ -63,7 +62,6 @@ switch (kind)
 	}
 	break;
 
-	// ------------------------------------------------------------ STREET LAMP
 	case "lamp":
 	{
 		var _lx = dx + w / 2;
@@ -89,7 +87,6 @@ switch (kind)
 	}
 	break;
 
-	// ------------------------------------------------------------ TREE
 	case "tree":
 	{
 		var _tx = dx + w / 2;
@@ -130,7 +127,6 @@ switch (kind)
 	}
 	break;
 
-	// ------------------------------------------------------------ BUSH
 	case "bush":
 	{
 		var _bx = dx + w / 2;
@@ -162,7 +158,6 @@ switch (kind)
 	}
 	break;
 
-	// ------------------------------------------------------------ PLANTER BOX
 	case "planter":
 	{
 		draw_set_alpha(0.25);
@@ -191,7 +186,6 @@ switch (kind)
 	}
 	break;
 
-	// ------------------------------------------------------------ DUMPSTER
 	case "dumpster":
 	{
 		draw_set_alpha(0.3);
@@ -230,7 +224,6 @@ switch (kind)
 	}
 	break;
 
-	// ------------------------------------------------------------ BENCH
 	case "bench":
 	{
 		draw_set_alpha(0.28);
@@ -257,7 +250,6 @@ switch (kind)
 	}
 	break;
 
-	// ------------------------------------------------------------ BOLLARD
 	case "bollard":
 	{
 		draw_set_alpha(0.28);
@@ -274,7 +266,6 @@ switch (kind)
 	}
 	break;
 
-	// ------------------------------------------------------------ TRAFFIC CONE
 	case "cone":
 	{
 		draw_set_alpha(0.28);
@@ -290,7 +281,6 @@ switch (kind)
 	}
 	break;
 
-	// ------------------------------------------------------------ "P" SIGN
 	case "sign":
 	{
 		draw_set_color(make_color_rgb(130, 134, 142));
@@ -306,7 +296,6 @@ switch (kind)
 	}
 	break;
 
-	// ------------------------------------------------------------ MOOD OVERLAY (tint + lamp glow)
 	case "overlay":
 	{
 		var _ow = room_width;

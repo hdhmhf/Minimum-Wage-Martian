@@ -11,12 +11,13 @@ pick_dish = function(_table)
 	{
 		for (var i = 0; i < array_length(dishes); i++) if (dishes[i].food == _table.customer.wants) return i;
 	}
-	return 0;
+	return -1;
 }
 
 serve_table = function(_table)
 {
 	var _i = pick_dish(_table);
+	if (_i < 0) return;
 	_table.plate_food = dishes[_i].state;
 	_table.plate_kind = dishes[_i].food;
 	_table.plate_toppings = dishes[_i].toppings;

@@ -1,14 +1,11 @@
 if (!instance_exists(obj_Game)) instance_create_depth(0, 0, 0, obj_Game);
 
-// Create the invisible collision boundaries for the Sprite31 parking-lot map.
 if (!instance_exists(obj_parking_lot))
 	instance_create_layer(0, 0, "Instances", obj_parking_lot);
 
-// Park the driveable car in the upper row's second stall.
 if (!instance_exists(obj_Car))
 	instance_create_layer(110, 118, "Instances", obj_Car);
 
-// Door is centered in the entrance drawn into the building facade.
 	instance_create_layer(160, 35, "Instances", obj_door, {
 	target_room: Dining_Area,
 	target_x: 160,
@@ -18,8 +15,7 @@ if (!instance_exists(obj_Car))
 	image_yscale: 0.08
 });
 
-// Start at the center of the parking area. Preserve door-provided coordinates
-// when a persistent player returns from another room.
+// start in the middle unless we came through a door
 if (!instance_exists(obj_Player))
 {
 	var _spawn_x = 160;

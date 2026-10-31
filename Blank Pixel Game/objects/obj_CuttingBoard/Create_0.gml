@@ -38,7 +38,7 @@ use = function(_chef)
 	open = true;
 	chef = _chef;
 	_chef.in_menu = true;
-	global.board_open = true;
+	global.ui.board_open = true;
 	phase = "in";
 	phase_t = current_time;
 	selected = -1;
@@ -58,7 +58,7 @@ finish_close = function()
 {
 	open = false;
 	phase = "";
-	global.board_open = false;
+	global.ui.board_open = false;
 	if (instance_exists(chef))
 	{
 		chef.in_menu = false;

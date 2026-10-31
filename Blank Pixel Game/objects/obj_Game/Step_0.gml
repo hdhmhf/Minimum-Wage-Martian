@@ -33,7 +33,7 @@ if (global.day_state == "summary")
 
 if (global.day_state == "tutorial")
 {
-	var _menu_open = global.board_open;
+	var _menu_open = global.ui.board_open;
 	with (obj_Fridge) if (menu_open) _menu_open = true;
 	if (keyboard_check_pressed(vk_escape) && !_menu_open)
 	{
@@ -44,15 +44,13 @@ if (global.day_state == "tutorial")
 	else tutorial_update();
 }
 
-// Tablet launcher and touch controls. The launcher is available on the left
-// in every room; the tablet can be moved and resized while open.
 var _mouse_pressed = mouse_check_button_pressed(mb_left) || device_mouse_check_button_pressed(0, mb_left);
 var _mouse_held = mouse_check_button(mb_left) || device_mouse_check_button(0, mb_left);
 var _mouse_released = mouse_check_button_released(mb_left) || device_mouse_check_button_released(0, mb_left);
 var _mx = device_mouse_x_to_gui(0);
 var _my = device_mouse_y_to_gui(0);
 var _icon_y = (display_get_gui_height() - 38) * 0.5;
-var _icon_x = 5 - 30 * (1 - global.tablet_button_alpha);
+var _icon_x = 5 - 30 * (1 - global.ui.tablet_button_alpha);
 var _hide_tablet_button = false;
 var _player = instance_find(obj_Player, 0);
 if (_player != noone && view_enabled && view_camera[0] != -1)
@@ -64,62 +62,61 @@ if (_player != noone && view_enabled && view_camera[0] != -1)
 	var _cam_h = max(1, camera_get_view_height(_cam));
 	var _player_gui_x = (_player.x - _cam_x) * display_get_gui_width() / _cam_w;
 	var _player_gui_y = (_player.y - _cam_y) * display_get_gui_height() / _cam_h;
-	// Give the player clearance when they are directly beneath the launcher.
 	_hide_tablet_button = (_player_gui_x >= -12 && _player_gui_x <= 54
 		&& _player_gui_y >= _icon_y - 12 && _player_gui_y <= _icon_y + 68);
 }
-global.tablet_button_alpha = lerp(global.tablet_button_alpha, _hide_tablet_button ? 0 : 1, 0.16);
-if (global.tablet_button_alpha < 0.01 && _hide_tablet_button) global.tablet_button_alpha = 0;
-if (global.tablet_button_alpha > 0.99 && !_hide_tablet_button) global.tablet_button_alpha = 1;
+global.ui.tablet_button_alpha = lerp(global.ui.tablet_button_alpha, _hide_tablet_button ? 0 : 1, 0.16);
+if (global.ui.tablet_button_alpha < 0.01 && _hide_tablet_button) global.ui.tablet_button_alpha = 0;
+if (global.ui.tablet_button_alpha > 0.99 && !_hide_tablet_button) global.ui.tablet_button_alpha = 1;
 
-if (_mouse_pressed && !global.board_open && global.tablet_button_alpha > 0.65 && _mx >= _icon_x && _mx <= _icon_x + 38 && _my >= _icon_y && _my <= _icon_y + 38)
+if (_mouse_pressed && !global.ui.board_open && global.ui.tablet_button_alpha > 0.65 && _mx >= _icon_x && _mx <= _icon_x + 38 && _my >= _icon_y && _my <= _icon_y + 38)
 {
-	global.tablet_open = !global.tablet_open;
-	if (global.tablet_open)
+	global.ui.tablet_open = !global.ui.tablet_open;
+	if (global.ui.tablet_open)
 	{
-		global.orders_scale = min((display_get_gui_height() - 12) / 400, (display_get_gui_width() - 20) / 400);
-		global.orders_x = (display_get_gui_width() - 400 * global.orders_scale) / 2;
-		global.orders_y = (display_get_gui_height() - 400 * global.orders_scale) / 2;
+		global.ui.orders_scale = min((display_get_gui_height() - 12) / 400, (display_get_gui_width() - 20) / 400);
+		global.ui.orders_x = (display_get_gui_width() - 400 * global.ui.orders_scale) / 2;
+		global.ui.orders_y = (display_get_gui_height() - 400 * global.ui.orders_scale) / 2;
 	}
 }
-else if (global.tablet_open)
+else if (global.ui.tablet_open)
 {
-	var _tablet_s = global.orders_scale;
+	var _tablet_s = global.ui.orders_scale;
 	var _tablet_w = 400 * _tablet_s;
 	var _tablet_h = 400 * _tablet_s;
-	if (global.orders_resizing)
+	if (global.ui.orders_resizing)
 	{
 		if (_mouse_held)
 		{
-			var _max_scale = min((display_get_gui_width() - global.orders_x - 2) / 400, (display_get_gui_height() - global.orders_y - 2) / 400);
-			global.orders_scale = clamp(max((_mx - global.orders_x) / 400, (_my - global.orders_y) / 400), 0.18, max(0.18, _max_scale));
-			global.orders_scale = min(global.orders_scale, _max_scale);
+			var _max_scale = min((display_get_gui_width() - global.ui.orders_x - 2) / 400, (display_get_gui_height() - global.ui.orders_y - 2) / 400);
+			global.ui.orders_scale = clamp(max((_mx - global.ui.orders_x) / 400, (_my - global.ui.orders_y) / 400), 0.18, max(0.18, _max_scale));
+			global.ui.orders_scale = min(global.ui.orders_scale, _max_scale);
 		}
-		if (_mouse_released || !_mouse_held) global.orders_resizing = false;
+		if (_mouse_released || !_mouse_held) global.ui.orders_resizing = false;
 	}
-	else if (global.orders_dragging)
+	else if (global.ui.orders_dragging)
 	{
 		if (_mouse_held)
 		{
-			global.orders_x = clamp(_mx - global.orders_drag_offset_x, 2, display_get_gui_width() - _tablet_w - 2);
-			global.orders_y = clamp(_my - global.orders_drag_offset_y, 2, display_get_gui_height() - _tablet_h - 2);
+			global.ui.orders_x = clamp(_mx - global.ui.orders_drag_offset_x, 2, display_get_gui_width() - _tablet_w - 2);
+			global.ui.orders_y = clamp(_my - global.ui.orders_drag_offset_y, 2, display_get_gui_height() - _tablet_h - 2);
 		}
-		if (_mouse_released || !_mouse_held) global.orders_dragging = false;
+		if (_mouse_released || !_mouse_held) global.ui.orders_dragging = false;
 	}
 	else if (_mouse_pressed)
 	{
-		var _lx = _mx - global.orders_x;
-		var _ly = _my - global.orders_y;
+		var _lx = _mx - global.ui.orders_x;
+		var _ly = _my - global.ui.orders_y;
 		if (_lx >= 382 * _tablet_s && _ly >= 382 * _tablet_s)
-			global.orders_resizing = true;
+			global.ui.orders_resizing = true;
 		else if (_ly >= 80 * _tablet_s && _ly <= 115 * _tablet_s && _lx >= 40 * _tablet_s && _lx <= 370 * _tablet_s)
 		{
-			global.orders_dragging = true;
-			global.orders_drag_offset_x = _lx;
-			global.orders_drag_offset_y = _ly;
+			global.ui.orders_dragging = true;
+			global.ui.orders_drag_offset_x = _lx;
+			global.ui.orders_drag_offset_y = _ly;
 		}
 		else if (_lx >= 25 * _tablet_s && _lx <= 375 * _tablet_s && _ly >= 114 * _tablet_s && _ly <= 139 * _tablet_s)
-			global.orders_open = !global.orders_open;
+			global.ui.orders_open = !global.ui.orders_open;
 		else if (_lx >= 32 * _tablet_s && _lx <= 370 * _tablet_s && _ly >= 337 * _tablet_s && _ly <= 374 * _tablet_s)
 		{
 			if (!global.car_owned)
@@ -130,7 +127,7 @@ else if (global.tablet_open)
 			else if (global.order_mode == "restaurant")
 			{
 				global.order_mode = "neighborhood";
-				global.orders_open = true;
+				global.ui.orders_open = true;
 			}
 			else global.order_mode = "restaurant";
 		}
@@ -159,20 +156,19 @@ if (global.day_state == "running" && global.order_mode == "neighborhood" && glob
 	if (array_length(global.neighborhood_orders) < 3)
 	{
 		var _houses = ["Red House", "Blue House", "Orange House", "Purple House"];
-		var _food = global.fridge_foods[irandom(array_length(global.fridge_foods) - 1)];
+		var _order = global.make_order();
 		array_push(global.neighborhood_orders, {
-			food: _food,
+			food: _order.food,
+			toppings: _order.toppings,
 			house: _houses[irandom(array_length(_houses) - 1)],
 			created: current_time,
 			deadline: current_time + 60000
 		});
-		// Keep at least 30 seconds between incoming neighborhood orders.
 		next_neighborhood_order = current_time + 30000;
 	}
 	else next_neighborhood_order = current_time + 1000;
 }
 
-// Expired delivery orders are removed and play the angry sound exactly once.
 for (var oi = array_length(global.neighborhood_orders) - 1; oi >= 0; oi--)
 {
 	if (current_time >= global.neighborhood_orders[oi].deadline)
